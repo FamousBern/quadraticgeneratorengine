@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Quadratic Equation Apps</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .apps {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .app {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+            margin: 10px;
+            width: 200px;
+        }
+
+        .app h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .app p {
+            font-size: 14px;
+        }
+
+        .app a {
+            display: block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .app a:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Quadratic Equation Apps</h1>
+        <div class="apps">
+            <div class="app">
+                <h2>Quadratic Equations Generator</h2>
+                <p>
+                    This app generates random quadratic equations and solves them for you. 
+                    It provides the equation, discriminant, and the roots (if real roots exist).
+                </p>
+                <a href="quadgenerator/">Try App</a>
+            </div>
+            <div class="app">
+                <h2>Quadratic Equation Solver</h2>
+                <p>
+                    This app allows you to solve quadratic equations by providing the coefficients. 
+                    It calculates the equation, discriminant, and the roots (if real roots exist).
+                </p>
+                <a href="/solver/">Try App</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

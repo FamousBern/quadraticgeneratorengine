@@ -1,0 +1,1 @@
+web: gunicorn quadratic_webapp.wsgi –log-file -

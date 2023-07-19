@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Music Visualizer</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f9c6c9; /* Light pink background color */
+            margin: 0;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #visualizer {
+            width: 400px;
+            height: 200px;
+            background-color: #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        #controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #progressBar {
+            width: 100%;
+            height: 4px;
+            background-color: #ddd;
+            border-radius: 2px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #progressFill {
+            height: 100%;
+            background-color: #3498db;
+            border-radius: 2px;
+        }
+
+        #loopButton {
+            background-color: #fff;
+            border: 2px solid #3498db;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #loopButton.active {
+            background-color: #3498db;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="visualizer"></div>
+        <input type="file" accept="audio/*" id="musicInput" multiple>
+        <div id="controls">
+            <button id="prevButton">Prev</button>
+            <button id="backwardButton">Backward</button>
+            <button id="playButton">Play</button>
+            <button id="stopButton">Stop</button>
+            <button id="forwardButton">Forward</button>
+            <button id="nextButton">Next</button>
+        </div>
+        <div id="progressBar">
+            <div id="progressFill"></div>
+        </div>
+        <div id="loopButton">Loop: Off</div>
+        <div id="trackName"></div>
+    </div>
+    <audio id="audio"></audio>
+
+    <script>
+        const audioElement = document.getElementById('audio');
+        const visualizer = document.getElementById('visualizer');
+        const musicInput = document.getElementById('musicInput');
+        const playButton = document.getElementById('playButton');
+        const stopButton = document.getElementById('stopButton');
+        const backwardButton = document.getElementById('backwardButton');
+        const forwardButton = document.getElementById('forwardButton');
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const loopButton = document.getElementById('loopButton');
+        const trackNameDisplay = document.getElementById('trackName');
+
+        let currentTrack = 0;
+        let tracks = [];
+
+        musicInput.addEventListener('change', function(event) {
+            tracks = event.target.files;
+            loadTrack(currentTrack);
+        });
+
+        function loadTrack(trackIndex) {
+            if (tracks.length === 0) return;
+
+            const track = tracks[trackIndex];
+            const objectURL = URL.createObjectURL(track);
+            audioElement.src = objectURL;
+            currentTrack = trackIndex;
+            trackNameDisplay.textContent = track.name;
+            togglePlay();
+        }
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        const barWidth = (visualizer.offsetWidth / bufferLength) * 2.5;
+        let barHeight;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = visualizer.offsetWidth;
+        canvas.height = visualizer.offsetHeight;
+        const ctx = canvas.getContext('2d');
+        visualizer.appendChild(canvas);
+
+        let isPlaying = false;
+        let animationFrameId;
+        let progressBarInterval;
+        let isLooping = false;
+
+        function togglePlay() {
+            if (isPlaying) {
+                audioElement.pause();
+                isPlaying = false;
+                clearInterval(progressBarInterval);
+                cancelAnimationFrame(animationFrameId);
+                progressBar.style.display = 'none';
+            } else {
+                audioContext.resume().then(() => {
+                    audioElement.play().catch((err) => {
+                        console.log(err);
+                        isPlaying = false;
+                        progressBar.style.display = 'none';
+                        clearInterval(progressBarInterval);
+                        cancelAnimationFrame(animationFrameId);
+                    });
+                    isPlaying = true;
+                    progressBar.style.display = 'block';
+                    progressBarInterval = setInterval(updateProgressBar, 100);
+                    renderFrame();
+                });
+            }
+        }
+
+        function updateProgressBar() {
+            const progress = (audioElement.currentTime / audioElement.duration) * 100;
+            progressFill.style.width = progress + '%';
+        }
+
+        function backward() {
+            audioElement.currentTime -= 5; // Move 5 seconds backward
+        }
+
+        function forward() {
+            audioElement.currentTime += 5; // Move 5 seconds forward
+        }
+
+        function toggleLoop() {
+            isLooping = !isLooping;
+            if (isLooping) {
+                audioElement.loop = true;
+                loopButton.classList.add('active');
+                loopButton.textContent = 'Loop: On';
+            } else {
+                audioElement.loop = false;
+                loopButton.classList.remove('active');
+                loopButton.textContent = 'Loop: Off';
+            }
+        }
+
+        playButton.addEventListener('click', togglePlay);
+        stopButton.addEventListener('click', togglePlay);
+        backwardButton.addEventListener('click', backward);
+        forwardButton.addEventListener('click', forward);
+        loopButton.addEventListener('click', toggleLoop);
+
+        audioElement.addEventListener('ended', function() {
+            isPlaying = false;
+            progressBar.style.display = 'none';
+            clearInterval(progressBarInterval);
+            cancelAnimationFrame(animationFrameId);
+        });
+
+        audioElement.addEventListener('play', function() {
+            const source = audioContext.createMediaElementSource(audioElement);
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+        });
+
+        function renderFrame() {
+            analyser.getByteFrequencyData(dataArray);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let x = 0;
+            dataArray.forEach((item) => {
+                barHeight = item;
+
+                const r = barHeight + (25 * (x/bufferLength));
+                const g = 250 * (x/bufferLength);
+                const b = 50;
+
+                ctx.fillStyle = `rgb(${r},${g},${b})`;
+                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+                x += barWidth + 1;
+            });
+
+            animationFrameId = requestAnimationFrame(renderFrame);
+        }
+
+        prevButton.addEventListener('click', function() {
+            currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
+            loadTrack(currentTrack);
+        });
+
+        nextButton.addEventListener('click', function() {
+            currentTrack = (currentTrack + 1) % tracks.length;
+            loadTrack(currentTrack);
+        });
+
+        loadTrack(currentTrack); // Load the first track initially
+    </script>
+</body>
+</html>

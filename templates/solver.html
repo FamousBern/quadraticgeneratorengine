@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Quadratic Equation Solver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 400px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #resultTable {
+            max-width: 400px;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        #resultTable th,
+        #resultTable td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        #resultTable th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .equation {
+            font-style: italic;
+        }
+
+        .discriminant {
+            font-weight: bold;
+        }
+
+        .roots {
+            font-style: italic;
+        }
+
+        .no-roots {
+            color: #ff0000;
+            font-style: italic;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#equationForm').submit(function(event) {
+                event.preventDefault();
+                var formData = $(this).serialize();
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: $(this).attr('method'),
+                    data: formData,
+                    success: function(data) {
+                        displayResult(data);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                    }
+                });
+            });
+
+            function displayResult(data) {
+                var resultTable = $('#resultTable');
+                resultTable.empty();
+
+                var tableHeader = $('<tr>');
+                tableHeader.append($('<th>').text('Equation'));
+                tableHeader.append($('<th>').text('Discriminant'));
+                tableHeader.append($('<th>').text('Roots'));
+                resultTable.append(tableHeader);
+
+                var equationRow = $('<tr>');
+                equationRow.append($('<td>').addClass('equation').text(data.equation));
+                equationRow.append($('<td>').addClass('discriminant').text(data.discriminant));
+                
+                var rootsCell = $('<td>');
+                if (data.roots !== null) {
+                    rootsCell.addClass('roots').text(data.roots.join(', '));
+                } else {
+                    rootsCell.addClass('no-roots').text('No real roots');
+                }
+                equationRow.append(rootsCell);
+
+                resultTable.append(equationRow);
+            }
+        });
+    </script>
+</head>
+<body>
+
+    
+    <div class="container">
+        
+        <div class="card">
+            <a href="{% url 'home' %}">Home</a>
+            <h1>Quadratic Equation Solver</h1>
+            <form id="equationForm" method="post" action="">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="a">Coefficient a:</label>
+                    <input type="number" id="a" name="a" step="any" required>
+                </div>
+                <div class="form-group">
+                    <label for="b">Coefficient b:</label>
+                    <input type="number" id="b" name="b" step="any" required>
+                </div>
+                <div class="form-group">
+                    <label for="c">Coefficient c:</label>
+                    <input type="number" id="c" name="c" step="any" required>
+                </div>
+                <div class="form-group">
+                    <button class="btn" type="submit">Solve Equation</button>
+                </div>
+            </form>
+        </div>
+        <table id="resultTable"></table>
+    </div>
+</body>
+</html>
