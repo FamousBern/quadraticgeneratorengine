@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-2j!mu1faa(jp6otaonza!rq*j*b*9lzzs6##3m^ljp&1%o@0e&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['quadraticequationengine.herokuapp.com', '127.0.0.1']
+ALLOWED_HOSTS = ['quadraticequationengine-772ac0ad553b.herokuapp.com', '127.0.0.1']
 
 
 # Application definition
