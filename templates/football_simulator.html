@@ -2,6 +2,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+   
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Visualizer</title>
     <style>
         body {
@@ -75,6 +78,16 @@
         #loopButton.active {
             background-color: #3498db;
             color: #fff;
+        }
+
+        @media only screen and (max-width: 768px) {
+            .apps {
+                flex-direction: column;
+            }
+
+            .app {
+                width: 80%;
+            }
         }
     </style>
 </head>

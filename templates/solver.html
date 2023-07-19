@@ -3,6 +3,7 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quadratic Equation Solver</title>
     <style>
         body {
@@ -80,6 +81,16 @@
         .no-roots {
             color: #ff0000;
             font-style: italic;
+        }
+
+        @media only screen and (max-width: 768px) {
+            .card {
+                max-width: 90%;
+            }
+
+            .btn {
+                font-size: 14px;
+            }
         }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
