@@ -23,7 +23,7 @@ urlpatterns = [
     path('quadgenerator/', include('equations.urls')),
     path('solver/', include('quadratic_equation_solver.urls')),
     path('simulate_match/', include('simulator.urls')),
-    
+    path('mathgeneratorengine/', include('mathgenengine.urls')),
     path('admin/', admin.site.urls),
 
 ]

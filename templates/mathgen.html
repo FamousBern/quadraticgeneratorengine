@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random Mathematics Generator App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* ... Your CSS styles here ... */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            margin-top: auto;
+            max-width: 400px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        label, input, select, button {
+            margin: 5px;
+        }
+
+        #generate {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #generate:hover {
+            background-color: #0056b3;
+        }
+
+        #output {
+            display: flex;
+            justify-content: center;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+
+        .export-pdf-btn {
+            padding: 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Responsive Media Queries */
+        @media screen and (max-width: 768px) {
+            /* CSS styles for tablets and smaller devices */
+            body {
+                font-size: 16px;
+            }
+            .container {
+                max-width: 90%;
+                padding: 10px;
+            }
+            form {
+                flex-direction: column;
+            }
+            label, input, select, button {
+                margin: 5px 0;
+            }
+            #output {
+                overflow-x: auto;
+            }
+            table {
+                font-size: 14px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            /* CSS styles for smartphones and smaller devices */
+            body {
+                font-size: 14px;
+            }
+            .container {
+                max-width: 100%;
+                padding: 5px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            form {
+                flex-direction: column;
+            }
+            label, input, select, button {
+                margin: 3px 0;
+            }
+            #output {
+                overflow-x: auto;
+            }
+            table {
+                font-size: 12px;
+            }
+        }
+    </style>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'home' %}">Home</a>
+        <h1>Random Maths Generator</h1>
+        <form id="mathForm">
+            <!-- ... Your form elements ... -->
+            <label for="operation">Select an operation:</label>
+            <select id="operation">
+                <option value="addition">Addition</option>
+                <option value="subtraction">Subtraction</option>
+                <option value="multiplication">Multiplication</option>
+                <option value="division">Division</option>
+            </select>
+
+            <label for="leftDigits">Number of digits on the left side:</label>
+            <input type="number" id="leftDigits" min="1" max="4" value="2">
+
+            <label for="rightDigits">Number of digits on the right side:</label>
+            <input type="number" id="rightDigits" min="1" max="4" value="2">
+
+            <label for="numQuestions">Number of questions:</label>
+            <input type="number" id="numQuestions" min="1" value="10">
+
+            <label for="includeAnswer">Include answer:</label>
+            <input type="checkbox" id="includeAnswer">
+            <button id="generate">Generate Problems</button>
+        </form>
+        <div id="output">
+            <!-- The generated table will be inserted here -->
+        </div>
+    </div>
+
+    <script>
+
+function getRandomDigit() {
+            return Math.floor(Math.random() * 9) + 1;
+        }
+
+        function generateRandomNumber(digits) {
+            let number = '';
+            for (let i = 0; i < digits; i++) {
+                const digit = i === 0 ? getRandomDigit() : Math.floor(Math.random() * 10);
+                number += digit;
+            }
+            return parseInt(number);
+        }
+
+        function convertToFraction(decimal) {
+            const tolerance = 1.0E-6;
+            let numerator = 1;
+            let denominator = 1;
+            let wholeNumber = Math.floor(decimal);
+            decimal -= wholeNumber;
+
+            while (Math.abs(decimal - Math.round(decimal)) > tolerance) {
+                decimal = 1 / (decimal - Math.floor(decimal));
+                const tempNumerator = numerator;
+                numerator = wholeNumber * numerator + denominator;
+                denominator = tempNumerator;
+                wholeNumber = Math.floor(decimal);
+                decimal -= wholeNumber;
+            }
+
+            numerator = wholeNumber * numerator + denominator;
+            return `${numerator}/${denominator}`;
+        }
+
+        function generateProblems() {
+            const operation = document.getElementById('operation').value;
+            const leftDigits = parseInt(document.getElementById('leftDigits').value);
+            const rightDigits = parseInt(document.getElementById('rightDigits').value);
+            const numQuestions = parseInt(document.getElementById('numQuestions').value);
+            const includeAnswer = document.getElementById('includeAnswer').checked;
+
+            const outputTable = document.createElement('table');
+            const headerRow = outputTable.insertRow();
+            headerRow.innerHTML = `<th>Problem</th>${includeAnswer ? '<th>Answer</th>' : ''}`;
+
+            for (let i = 0; i < numQuestions; i++) {
+                const leftNumber = generateRandomNumber(leftDigits);
+                const rightNumber = generateRandomNumber(rightDigits);
+
+                let operatorSymbol = '';
+                let answer = '';
+                let fractionAnswer = '';
+
+                switch (operation) {
+                    case 'addition':
+                        operatorSymbol = '+';
+                        answer = leftNumber + rightNumber;
+                        break;
+                    case 'subtraction':
+                        operatorSymbol = '-';
+                        answer = leftNumber - rightNumber;
+                        break;
+                    case 'multiplication':
+                        operatorSymbol = '×';
+                        answer = leftNumber * rightNumber;
+                        break;
+                    case 'division':
+                        operatorSymbol = '÷';
+                        answer = (leftNumber / rightNumber).toFixed(2);
+                        fractionAnswer = convertToFraction(leftNumber / rightNumber);
+                        break;
+                }
+
+                const problem = `${leftNumber} ${operatorSymbol} ${rightNumber} = ?`;
+
+                const row = outputTable.insertRow();
+                row.innerHTML = `<td>${problem}</td>${includeAnswer ? `<td>${operation === 'division' ? `${answer} or ${fractionAnswer}` : answer}</td>` : ''}`;
+            }
+
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = '';
+            outputDiv.appendChild(outputTable);
+        }
+
+        document.getElementById('generate').addEventListener('click', function (event) {
+            event.preventDefault();
+            generateProblems();
+        });
+
+
+                // Function to export the table to PDF using html2pdf library
+                function exportToPDF() {
+            const outputDiv = document.getElementById('output');
+            const table = outputDiv.querySelector('table');
+
+            if (table) {
+                // Use html2pdf library to convert the table to PDF
+                html2pdf()
+                    .from(table)
+                    .save();
+            }
+        }
+
+        // Add an "Export to PDF" button below the generated results
+        function addExportToPDFButton() {
+            const outputDiv = document.getElementById('output');
+            const exportPDFButton = document.createElement('button');
+            exportPDFButton.classList.add('export-pdf-btn');
+            exportPDFButton.textContent = 'Export to PDF';
+            exportPDFButton.addEventListener('click', exportToPDF);
+            outputDiv.appendChild(exportPDFButton);
+        }
+
+        // ... Your existing code ...
+
+        // Call the function to add "Export to PDF" button when generating problems
+        document.getElementById('generate').addEventListener('click', function (event) {
+            event.preventDefault();
+            generateProblems();
+            addExportToPDFButton(); // Call this function after generating the table
+        });
+ 
+    </script>
+</body>
+</html>
